@@ -81,47 +81,48 @@ jobs:
         name: 스마트_학습_도우미_macOS
         path: dist/스마트_학습_도우미
 
-  create-release:
-    needs: [build-windows, build-macos]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    
-    steps:
-    - name: Download Windows artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: 스마트_학습_도우미_Windows
-        path: ./windows
-    
-    - name: Download macOS artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: 스마트_학습_도우미_macOS
-        path: ./macos
-    
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
-      with:
-        tag_name: v${{ github.run_number }}
-        name: 스마트 학습 도우미 v${{ github.run_number }}
-        body: |
-          ## 📚 스마트 학습 도우미 v${{ github.run_number }}
-          
-          ### 🚀 사용 방법
-          1. **Windows**: `스마트_학습_도우미.exe` 더블클릭
-          2. **macOS**: `스마트_학습_도우미` 더블클릭
-          3. 브라우저에서 온라인 강의 로그인
-          4. GUI에서 "로그인 완료" 버튼 클릭
-          5. 학습 시작!
-          
-          ### ⚠️ 주의사항
-          - Chrome 브라우저가 설치되어 있어야 합니다
-          - 인터넷 연결이 필요합니다
-          - Python 설치가 필요하지 않습니다!
-        files: |
-          windows/스마트_학습_도우미.exe
-          macos/스마트_학습_도우미
-        draft: false
-        prerelease: false
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  # Release 기능 비활성화 - Artifacts에서 직접 다운로드 가능
+  # create-release:
+  #   needs: [build-windows, build-macos]
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+  #   
+  #   steps:
+  #   - name: Download Windows artifact
+  #     uses: actions/download-artifact@v4
+  #     with:
+  #       name: 스마트_학습_도우미_Windows
+  #       path: ./windows
+  #   
+  #   - name: Download macOS artifact
+  #     uses: actions/download-artifact@v4
+  #     with:
+  #       name: 스마트_학습_도우미_macOS
+  #       path: ./macos
+  #   
+  #   - name: Create Release
+  #     uses: softprops/action-gh-release@v1
+  #     with:
+  #       tag_name: v${{ github.run_number }}
+  #       name: 스마트 학습 도우미 v${{ github.run_number }}
+  #       body: |
+  #         ## 📚 스마트 학습 도우미 v${{ github.run_number }}
+  #         
+  #         ### 🚀 사용 방법
+  #         1. **Windows**: `스마트_학습_도우미.exe` 더블클릭
+  #         2. **macOS**: `스마트_학습_도우미` 더블클릭
+  #         3. 브라우저에서 온라인 강의 로그인
+  #         4. GUI에서 "로그인 완료" 버튼 클릭
+  #         5. 학습 시작!
+  #         
+  #         ### ⚠️ 주의사항
+  #         - Chrome 브라우저가 설치되어 있어야 합니다
+  #         - 인터넷 연결이 필요합니다
+  #         - Python 설치가 필요하지 않습니다!
+  #       files: |
+  #         windows/스마트_학습_도우미.exe
+  #         macos/스마트_학습_도우미
+  #       draft: false
+  #       prerelease: false
+  #     env:
+  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
