@@ -83,6 +83,29 @@ class KTEduAutoPlayer:
         # User-Agent 설정
         chrome_options.add_argument('--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36')
         
+        # Wine 환경에서 Chrome 경로 설정
+        import os
+        if os.name == 'nt':  # Windows 환경 (Wine 포함)
+            # Wine 환경에서 Chrome 경로 찾기
+            possible_chrome_paths = [
+                r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+                r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+                r"C:\Users\{}\AppData\Local\Google\Chrome\Application\chrome.exe".format(os.getenv('USERNAME', '')),
+                r"C:\Users\{}\AppData\Local\Google\Chrome\Application\chrome.exe".format(os.getenv('USER', '')),
+            ]
+            
+            chrome_found = False
+            for chrome_path in possible_chrome_paths:
+                if os.path.exists(chrome_path):
+                    chrome_options.binary_location = chrome_path
+                    self.log_print(f"✅ Chrome 경로 설정: {chrome_path}")
+                    chrome_found = True
+                    break
+            
+            if not chrome_found:
+                self.log_print("⚠️ Chrome을 찾을 수 없습니다. Wine 환경에 Chrome을 설치해주세요.")
+                self.log_print("💡 해결방법: wine chrome_installer.exe 실행하여 Chrome 설치")
+        
         self.log_print("✅ Chrome 옵션 설정 완료")
         
         # 실행파일인지 확인하여 chromedriver 경로 설정
