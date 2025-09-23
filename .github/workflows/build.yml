@@ -27,9 +27,9 @@ jobs:
     
     - name: Download ChromeDriver for Windows
       run: |
-        Invoke-WebRequest -Uri "https://chromedriver.storage.googleapis.com/140.0.7339.185/chromedriver_win32.zip" -OutFile "chromedriver.zip"
+        Invoke-WebRequest -Uri "https://storage.googleapis.com/chrome-for-testing-public/140.0.7339.185/win32/chromedriver-win32.zip" -OutFile "chromedriver.zip"
         Expand-Archive -Path "chromedriver.zip" -DestinationPath "."
-        Move-Item "chromedriver.exe" "chromedriver_140"
+        Move-Item "chromedriver-win32/chromedriver.exe" "chromedriver_140"
     
     - name: Build Windows executable
       run: |
@@ -60,9 +60,9 @@ jobs:
     
     - name: Download ChromeDriver for macOS
       run: |
-        curl -O https://chromedriver.storage.googleapis.com/140.0.7339.185/chromedriver_mac64.zip
-        unzip chromedriver_mac64.zip
-        mv chromedriver chromedriver_140
+        curl -L -O https://storage.googleapis.com/chrome-for-testing-public/140.0.7339.185/mac-x64/chromedriver-mac-x64.zip
+        unzip chromedriver-mac-x64.zip
+        mv chromedriver-mac-x64/chromedriver chromedriver_140
         chmod +x chromedriver_140
     
     - name: Build macOS executable
