@@ -38,14 +38,30 @@ class KTEduAutoPlayer:
             except:
                 pass
         
-        # 터미널에도 출력
-        print(message, flush=True)
+        # 터미널에도 출력 (Windows 호환성을 위해 인코딩 처리)
         try:
+            # Windows 환경에서 안전한 출력
             import sys
-            sys.stdout.write(f"{message}\n")
-            sys.stdout.flush()
+            import os
+            
+            # Windows에서는 cp949 인코딩 사용
+            if os.name == 'nt':
+                try:
+                    # 이모지 문자를 안전한 문자로 변환
+                    safe_message = message.encode('utf-8', errors='replace').decode('utf-8')
+                    # 이모지를 제거하거나 대체
+                    safe_message = safe_message.replace('🚀', '[시작]').replace('✅', '[완료]').replace('❌', '[오류]')
+                    print(safe_message, flush=True)
+                except:
+                    # 인코딩 실패 시 이모지 제거
+                    import re
+                    safe_message = re.sub(r'[^\x00-\x7F]+', '[이모지]', message)
+                    print(safe_message, flush=True)
+            else:
+                print(message, flush=True)
         except:
-            pass
+            # 모든 출력 실패 시 기본 메시지
+            print("로그 메시지 출력됨", flush=True)
         
     def setup_driver(self):
         """Chrome 드라이버 설정 및 초기화"""
