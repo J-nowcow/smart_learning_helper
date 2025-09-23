@@ -27,6 +27,9 @@ jobs:
     
     - name: Download ChromeDriver for Windows
       run: |
+        if (Test-Path "chromedriver_140") { Remove-Item "chromedriver_140" -Force }
+        if (Test-Path "chromedriver.zip") { Remove-Item "chromedriver.zip" -Force }
+        if (Test-Path "chromedriver-win32") { Remove-Item "chromedriver-win32" -Recurse -Force }
         Invoke-WebRequest -Uri "https://storage.googleapis.com/chrome-for-testing-public/140.0.7339.185/win32/chromedriver-win32.zip" -OutFile "chromedriver.zip"
         Expand-Archive -Path "chromedriver.zip" -DestinationPath "."
         Move-Item "chromedriver-win32/chromedriver.exe" "chromedriver_140"
@@ -60,6 +63,9 @@ jobs:
     
     - name: Download ChromeDriver for macOS
       run: |
+        rm -f chromedriver_140
+        rm -f chromedriver-mac-x64.zip
+        rm -rf chromedriver-mac-x64
         curl -L -O https://storage.googleapis.com/chrome-for-testing-public/140.0.7339.185/mac-x64/chromedriver-mac-x64.zip
         unzip chromedriver-mac-x64.zip
         mv chromedriver-mac-x64/chromedriver chromedriver_140
