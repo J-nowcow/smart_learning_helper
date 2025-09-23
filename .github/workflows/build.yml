@@ -36,7 +36,7 @@ jobs:
     
     - name: Build Windows executable
       run: |
-        pyinstaller --onefile --windowed --name=스마트_학습_도우미 --add-data=chromedriver_140;. ktedu_gui.py
+        pyinstaller --onefile --windowed --name=스마트_학습_도우미 --add-data="chromedriver_140;." ktedu_gui.py
     
     - name: Upload Windows artifact
       uses: actions/upload-artifact@v4
@@ -73,7 +73,7 @@ jobs:
     
     - name: Build macOS executable
       run: |
-        pyinstaller --onefile --windowed --name=스마트_학습_도우미 --add-data=chromedriver_140:. ktedu_gui.py
+        pyinstaller --onefile --windowed --name=스마트_학습_도우미 --add-data="chromedriver_140:." ktedu_gui.py
     
     - name: Upload macOS artifact
       uses: actions/upload-artifact@v4
