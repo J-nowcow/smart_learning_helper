@@ -8,19 +8,15 @@ import sys
 import os
 from browser_manager import BrowserManager
 from video_player import VideoPlayer
-from video_stt import VideoSTTProcessor
 
 class KTEduAutoPlayer:
-    def __init__(self, headless=False, log_queue=None, enable_stt=False, stt_model="base", stt_only=False):
+    def __init__(self, headless=False, log_queue=None):
         """
         스마트 학습 도우미 초기화
         
         Args:
             headless (bool): 브라우저를 숨김 모드로 실행할지 여부
             log_queue: GUI로 로그를 전달할 큐
-            enable_stt (bool): STT 기능 활성화 여부
-            stt_model (str): STT 모델 크기 (tiny, base, small, medium, large)
-            stt_only (bool): 영상 재생 없이 즉시 STT만 수행할지 여부
         """
         self.headless = headless
         self.log_queue = log_queue  # GUI로 로그 전달용 큐
@@ -31,13 +27,6 @@ class KTEduAutoPlayer:
         self.browser_manager = BrowserManager(headless=headless, log_callback=self.log_print)
         self.driver = None
         self.video_player = None
-        
-        # STT 기능 초기화
-        self.enable_stt = enable_stt
-        self.stt_only_mode = bool(stt_only)
-        self.stt_processor = None
-        if enable_stt:
-            self.stt_processor = VideoSTTProcessor(model_size=stt_model, log_callback=self.log_print)
         
     def log_print(self, message):
         """로그 출력 함수 - GUI와 터미널 모두에 출력"""
@@ -124,11 +113,6 @@ class KTEduAutoPlayer:
         self.log_print("🚀 스마트 학습을 시작합니다!")
         self.log_print(f"📊 최대 학습 강의 수: {self.max_videos}개")
         
-        if self.enable_stt:
-            self.log_print("🎤 STT 기능이 활성화되었습니다.")
-            if self.stt_processor:
-                self.stt_processor.setup_model()
-        
         try:
             # 드라이버가 초기화되지 않았다면 초기화
             if not self.driver:
@@ -153,77 +137,16 @@ class KTEduAutoPlayer:
                 # 알림창 처리
                 self.handle_alerts()
                 
-                # STT 전용 모드에서는 재생 준비를 건너뜀
-                video_element = None
-                if not self.stt_only_mode:
-                    video_element, _ = self.wait_for_video_ready()
-                    if not video_element:
-                        self.log_print("❌ 강의 플레이어를 찾을 수 없습니다. 다음 강의로 이동...")
-                        if not self.click_next_video():
-                            self.log_print("❌ 더 이상 학습할 강의가 없습니다.")
-                            break
-                        continue
-                
-                # STT 처리가 활성화된 경우 동영상 URL 추출 시도
-                video_url = None
-                if self.enable_stt and self.stt_processor:
-                    try:
-                        video_url = self.driver.execute_script("""
-                            var v = document.querySelector('video');
-                            if (!v) return null;
-                            return v.currentSrc || v.src || null;
-                        """)
-                        if video_url and video_url.startswith('http'):
-                            self.log_print(f"🎥 동영상 URL 추출: {video_url[:50]}...")
-                        else:
-                            video_url = None
-                    except:
-                        video_url = None
-                
-                stt_done = False
-                if self.enable_stt and self.stt_processor and video_url:
-                    self.log_print("🎤 STT 텍스트 추출 시작...")
-                    try:
-                        # Selenium 세션 쿠키를 yt-dlp로 전달하기 위한 Cookie 헤더 구성
-                        cookies = []
-                        try:
-                            for c in self.driver.get_cookies():
-                                name = c.get('name', '')
-                                value = c.get('value', '')
-                                if name:
-                                    cookies.append(f"{name}={value}")
-                        except Exception:
-                            pass
-                        cookie_header = "; ".join(cookies) if cookies else None
+                video_element, _ = self.wait_for_video_ready()
+                if not video_element:
+                    self.log_print("❌ 강의 플레이어를 찾을 수 없습니다. 다음 강의로 이동...")
+                    if not self.click_next_video():
+                        self.log_print("❌ 더 이상 학습할 강의가 없습니다.")
+                        break
+                    continue
 
-                        result = self.stt_processor.process_video(
-                            video_url,
-                            language="ko",
-                            cookies_header=cookie_header
-                        )
-                        if result:
-                            stt_done = True
-                            self.log_print(f"📝 텍스트 추출 완료: {len(result['text'])}자")
-                            self.log_print(f"📁 저장된 파일: {result['output_files']}")
-                        else:
-                            self.log_print("❌ STT 처리 실패")
-                    except Exception as e:
-                        self.log_print(f"❌ STT 처리 오류: {str(e)}")
-
-                # STT 전용 모드이면 STT 성공 시 즉시 다음 강의로 이동
-                if self.stt_only_mode:
-                    if stt_done:
-                        self.log_print("✅ STT 완료 → 다음 강의로 이동")
-                        if not self.click_next_video():
-                            self.log_print("❌ 더 이상 학습할 강의가 없습니다.")
-                            break
-                        time.sleep(3)
-                        continue
-                    else:
-                        self.log_print("⚠️ STT 실패 → 일반 재생으로 폴백")
-
-                # 일반 모드: 영상 재생 완료까지 모니터링
-                if not self.stt_only_mode and video_element:
+                # 영상 재생 완료까지 모니터링
+                if video_element:
                     success = self.wait_for_video_end(video_element)
                     if success:
                         self.log_print(f"✅ 강의 #{self.video_count} 학습 완료!")
@@ -244,16 +167,11 @@ class KTEduAutoPlayer:
             self.log_print(f"❌ 학습 중 오류 발생: {str(e)}")
         finally:
             self.log_print(f"📊 총 학습한 강의 수: {self.video_count}개")
-            # STT 처리기 정리
-            if self.stt_processor:
-                self.stt_processor.cleanup()
     
     def close(self):
         """드라이버 종료"""
         if self.browser_manager:
             self.browser_manager.close()
-        if self.stt_processor:
-            self.stt_processor.cleanup()
 
 def main_with_args(url, count, headless=False, log_queue=None):
     """GUI에서 호출하는 함수"""
