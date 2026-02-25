@@ -88,7 +88,7 @@ class SmartLearningGUI(QMainWindow):
             font-weight: bold;
             color: #333333;
             margin: 10px 0;
-            font-family: 'Arial', 'Malgun Gothic', sans-serif;
+            font-family: 'Arial', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
         """)
         title.setAlignment(Qt.AlignCenter)
         layout.addWidget(title)
@@ -190,7 +190,7 @@ class SmartLearningGUI(QMainWindow):
                 border: none;
                 border-radius: 25px;
                 padding: 10px 30px;
-                font-family: 'Arial', 'Malgun Gothic', sans-serif;
+                font-family: 'Arial', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
             }
             QPushButton:hover {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
