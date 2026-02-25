@@ -138,6 +138,36 @@ class SmartLearningGUI(QMainWindow):
         count_layout.addStretch()
         settings_layout.addLayout(count_layout)
         
+        # STT 기능 설정
+        stt_layout = QHBoxLayout()
+        self.stt_checkbox = QCheckBox("🎤 STT 텍스트 추출")
+        self.stt_checkbox.setStyleSheet("font-size: 14px; font-weight: bold; color: #2E86AB;")
+        stt_layout.addWidget(self.stt_checkbox)
+
+        # STT만 수행 (재생 건너뛰기)
+        self.stt_only_checkbox = QCheckBox("STT만 수행 (재생 건너뛰기)")
+        self.stt_only_checkbox.setStyleSheet("font-size: 13px; color: #444;")
+        stt_layout.addWidget(self.stt_only_checkbox)
+        
+        # STT 모델 선택
+        stt_model_label = QLabel("STT 모델:")
+        stt_model_label.setMinimumWidth(80)
+        self.stt_model_combo = QComboBox()
+        self.stt_model_combo.addItems(["tiny", "base", "small", "medium", "large"])
+        self.stt_model_combo.setCurrentText("base")
+        self.stt_model_combo.setStyleSheet("""
+            QComboBox {
+                padding: 5px;
+                border: 1px solid #E0E0E0;
+                border-radius: 3px;
+                background-color: white;
+            }
+        """)
+        stt_layout.addWidget(stt_model_label)
+        stt_layout.addWidget(self.stt_model_combo)
+        stt_layout.addStretch()
+        settings_layout.addLayout(stt_layout)
+        
         settings_group.setLayout(settings_layout)
         layout.addWidget(settings_group)
         
@@ -518,8 +548,17 @@ class SmartLearningGUI(QMainWindow):
             # auto_player 모듈 직접 import
             import ktedu_auto_player
             
-            # 플레이어 인스턴스 생성 및 저장
-            self.player_instance = ktedu_auto_player.KTEduAutoPlayer(headless=False, log_queue=self.log_queue)
+            # 플레이어 인스턴스 생성 및 저장 (STT 기능 포함)
+            enable_stt = self.stt_checkbox.isChecked()
+            stt_model = self.stt_model_combo.currentText()
+            stt_only = self.stt_only_checkbox.isChecked()
+            self.player_instance = ktedu_auto_player.KTEduAutoPlayer(
+                headless=False, 
+                log_queue=self.log_queue,
+                enable_stt=enable_stt,
+                stt_model=stt_model,
+                stt_only=stt_only
+            )
             
             self.log_text.addItem("🌐 브라우저 실행 중...")
             self.log_text.scrollToBottom()
