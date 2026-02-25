@@ -31,7 +31,6 @@ def build_executable():
         "--onefile",    # 단일 실행파일로 생성
         "--windowed",   # 콘솔 창 숨기기 (GUI만 표시)
         "--name=스마트_학습_도우미",
-        f"--add-data=chromedriver_140{sep}.",  # 로컬 chromedriver 포함 (폴백용)
         # webdriver-manager 관련 hidden import
         "--hidden-import=webdriver_manager",
         "--hidden-import=webdriver_manager.chrome",

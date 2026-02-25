@@ -4,9 +4,6 @@ Chrome 드라이버 설정 및 초기화를 담당합니다.
 """
 
 import os
-import sys
-import tempfile
-import shutil
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -62,9 +59,6 @@ class BrowserManager:
         
         self.log("✅ Chrome 옵션 설정 완료")
         
-        # ChromeDriver 경로 설정
-        chromedriver_path = self._get_chromedriver_path()
-        
         # 1순위: webdriver-manager로 자동 다운로드/캐시 사용
         if _WDM_AVAILABLE:
             try:
@@ -77,32 +71,17 @@ class BrowserManager:
                 self._apply_stealth()
                 return self.driver
             except Exception as e_wdm:
-                self.log(f"⚠️ webdriver-manager 실패, 로컬 드라이버로 재시도: {str(e_wdm)}")
+                self.log(f"⚠️ webdriver-manager 실패, selenium-manager로 재시도: {str(e_wdm)}")
 
-        # 2순위: 기존 로컬 chromedriver_140 사용
-        try:
-            self.log(f"🚀 로컬 ChromeDriver 서비스 시작: {chromedriver_path}")
-            service = Service(chromedriver_path)
-            self.driver = webdriver.Chrome(service=service, options=chrome_options)
-            self.log("✅ Chrome 브라우저 시작 완료! (로컬 드라이버)")
-            self._apply_stealth()
-            return self.driver
-        except Exception as e:
-            self.log(f"❌ 로컬 ChromeDriver 실행 실패: {str(e)}")
-            self.log(f"📋 ChromeDriver 경로: {chromedriver_path}")
-            self.log(f"📋 파일 존재 여부: {os.path.exists(chromedriver_path)}")
-            if os.path.exists(chromedriver_path):
-                self.log(f"📋 파일 권한: {oct(os.stat(chromedriver_path).st_mode)}")
-
-        # 3순위: Selenium 내장 selenium-manager 폴백
+        # 2순위: Selenium 내장 selenium-manager 폴백
         try:
             self.log("🔁 Selenium-manager로 ChromeDriver 자동 설치/사용 시도 중...")
             self.driver = webdriver.Chrome(options=chrome_options)
             self.log("✅ Chrome 브라우저 시작 완료! (selenium-manager)")
             self._apply_stealth()
             return self.driver
-        except Exception as e3:
-            self.log(f"❌ 모든 드라이버 시도 실패: {str(e3)}")
+        except Exception as e2:
+            self.log(f"❌ 모든 드라이버 시도 실패: {str(e2)}")
             raise
     
     def _setup_chrome_path(self, chrome_options):
@@ -125,69 +104,6 @@ class BrowserManager:
         if not chrome_found:
             self.log("⚠️ Chrome을 찾을 수 없습니다. Wine 환경에 Chrome을 설치해주세요.")
             self.log("💡 해결방법: wine chrome_installer.exe 실행하여 Chrome 설치")
-    
-    def _get_chromedriver_path(self):
-        """ChromeDriver 경로 반환"""
-        if getattr(sys, 'frozen', False):
-            # 실행파일인 경우: 임시 디렉토리에서 chromedriver 찾기
-            return self._setup_executable_chromedriver()
-        else:
-            # 개발 환경인 경우
-            chromedriver_path = os.path.join(os.getcwd(), 'chromedriver_140')
-            self.log(f"🔍 개발 환경 ChromeDriver 경로: {chromedriver_path}")
-            
-            if not os.path.exists(chromedriver_path):
-                raise FileNotFoundError(f"ChromeDriver를 찾을 수 없습니다: {chromedriver_path}")
-            
-            # 실행 권한 확인 및 설정
-            if not os.access(chromedriver_path, os.X_OK):
-                os.chmod(chromedriver_path, 0o755)
-                self.log("✅ ChromeDriver 실행 권한 설정 완료")
-            
-            return chromedriver_path
-    
-    def _setup_executable_chromedriver(self):
-        """실행파일 모드에서 ChromeDriver 설정"""
-        self.log("🔍 실행파일 모드에서 ChromeDriver 경로 설정 중...")
-        
-        # 임시 디렉토리 생성
-        temp_dir = tempfile.mkdtemp()
-        chromedriver_path = os.path.join(temp_dir, "chromedriver")
-        self.log(f"📁 임시 디렉토리: {temp_dir}")
-        
-        # 실행파일 내부의 chromedriver를 임시 디렉토리로 복사
-        if hasattr(sys, '_MEIPASS'):
-            # PyInstaller로 빌드된 경우
-            source_path = os.path.join(sys._MEIPASS, "chromedriver_140")
-            self.log(f"📂 PyInstaller _MEIPASS: {sys._MEIPASS}")
-        else:
-            # 일반적인 경우
-            source_path = "./chromedriver_140"
-            self.log(f"📂 일반 경로: {source_path}")
-        
-        self.log(f"🔍 ChromeDriver 소스 경로: {source_path}")
-        self.log(f"📋 소스 파일 존재 여부: {os.path.exists(source_path)}")
-        
-        if os.path.exists(source_path):
-            try:
-                shutil.copy2(source_path, chromedriver_path)
-                os.chmod(chromedriver_path, 0o755)
-                self.log(f"✅ ChromeDriver 복사 완료: {chromedriver_path}")
-            except Exception as e:
-                self.log(f"❌ ChromeDriver 복사 실패: {str(e)}")
-                raise
-        else:
-            # _MEIPASS 디렉토리 내용 확인
-            if hasattr(sys, '_MEIPASS'):
-                try:
-                    meipass_contents = os.listdir(sys._MEIPASS)
-                    self.log(f"📋 _MEIPASS 디렉토리 내용: {meipass_contents}")
-                except:
-                    self.log("❌ _MEIPASS 디렉토리 접근 실패")
-            
-            raise FileNotFoundError(f"ChromeDriver를 찾을 수 없습니다: {source_path}")
-        
-        return chromedriver_path
     
     def _apply_stealth(self):
         """자동화 탐지 회피 스크립트 실행"""
