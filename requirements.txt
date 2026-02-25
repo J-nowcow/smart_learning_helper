@@ -3,3 +3,10 @@ beautifulsoup4==4.12.2
 requests==2.31.0
 PyQt5==5.15.10
 pyinstaller==6.3.0
+webdriver-manager>=4.0.0
+
+# STT 관련 라이브러리
+openai-whisper==20231117
+pydub==0.25.1
+ffmpeg-python==0.2.0
+yt-dlp==2023.12.30
