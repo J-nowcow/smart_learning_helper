@@ -13,7 +13,7 @@ def install_pyinstaller():
     """PyInstaller 설치"""
     print("📦 PyInstaller 설치 중...")
     try:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "pyinstaller==6.3.0"])
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "pyinstaller>=6.10.0"])
         print("✅ PyInstaller 설치 완료!")
         return True
     except subprocess.CalledProcessError as e:
@@ -25,12 +25,27 @@ def build_executable():
     print("🔨 실행파일 빌드 중...")
     
     # PyInstaller 명령어 구성
+    sep = ";" if os.name == "nt" else ":"
     cmd = [
-        "pyinstaller",
-        "--onefile",  # 단일 실행파일로 생성
-        "--windowed",  # 콘솔 창 숨기기 (GUI만 표시)
+        sys.executable, "-m", "PyInstaller",
+        "--onefile",    # 단일 실행파일로 생성
+        "--windowed",   # 콘솔 창 숨기기 (GUI만 표시)
         "--name=스마트_학습_도우미",
-        "--add-data=chromedriver_140:.",  # chromedriver 포함
+        f"--add-data=chromedriver_140{sep}.",  # 로컬 chromedriver 포함 (폴백용)
+        # webdriver-manager 관련 hidden import
+        "--hidden-import=webdriver_manager",
+        "--hidden-import=webdriver_manager.chrome",
+        "--hidden-import=webdriver_manager.core.driver_cache",
+        "--hidden-import=webdriver_manager.core.manager",
+        # selenium 관련
+        "--hidden-import=selenium",
+        "--hidden-import=selenium.webdriver.chrome.service",
+        "--hidden-import=selenium.webdriver.chrome.options",
+        # 기타
+        "--hidden-import=bs4",
+        "--hidden-import=requests",
+        "--collect-all=webdriver_manager",
+        "--noconfirm",
         "ktedu_gui.py"
     ]
     

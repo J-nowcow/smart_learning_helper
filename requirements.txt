@@ -2,7 +2,7 @@ selenium==4.15.2
 beautifulsoup4==4.12.2
 requests==2.31.0
 PyQt5==5.15.10
-pyinstaller==6.3.0
+pyinstaller>=6.10.0
 webdriver-manager>=4.0.0
 
 # STT 관련 라이브러리
